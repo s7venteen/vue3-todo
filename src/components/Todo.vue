@@ -57,7 +57,6 @@ const { todos, total, ...todoContext } = useTodoInject()
 const simpleImage = Empty.PRESENTED_IMAGE_SIMPLE
 
 const beforeUpload: UploadProps['beforeUpload'] = (file: File) => {
-  console.log(file)
   const format = file.name.split('.').pop()?.toLocaleLowerCase() ?? ''
   const isJson = format.includes('json')
   if (!isJson) {
@@ -67,7 +66,6 @@ const beforeUpload: UploadProps['beforeUpload'] = (file: File) => {
   const reader = new FileReader()
   reader.readAsText(file)
   reader.onload = e => {
-    // 类型守卫
     if (e.target?.result && typeof e.target.result === 'string') {
       const todos = JSON.parse(e.target.result) as Todos
       if (!Array.isArray(todos)) return

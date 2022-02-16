@@ -13,7 +13,7 @@ export type Todos = TodoItem[]
 
 export interface TodoContext {
   todos: RemovableRef<Todos>
-  total: number 
+  total: number
   autoTodos: ComputedRef<Todos>
   updateTodos: (todos: Todos) => void
   addTodoItem: (value: string) => void
@@ -29,25 +29,30 @@ enum TodoType {
 
 const TodoSymbol = Symbol()
 
+function createTodoItem(value?: string): TodoItem {
+  return {
+    id: nanoid(),
+    value: value ?? 'your first todo',
+    checked: false
+  }
+}
+
 export function useTodoProvide() {
   const route = useRoute()
 
   // state
-  const todos = useLocalStorage<Todos>('todos', [{
-    id: nanoid(),
-    value: 'your first todo',
-    checked: false
-  }])
+  const todos = useLocalStorage<Todos>('todos', [createTodoItem()])
 
   // getter
   const total = computed(() => unref(todos).filter(todo => !todo.checked).length)
 
   const autoTodos = computed(() => {
     const type = route.path.split('/')[1]
+    const unrefTodos = unref(todos)
     const map = new Map<string, Todos>([
-      [TodoType.ALL, unref(todos)],
-      [TodoType.ACTIVE, todos.value.filter(todo => !todo.checked)],
-      [TodoType.COMPLETED, todos.value.filter(todo => todo.checked)],
+      [TodoType.ALL, unrefTodos],
+      [TodoType.ACTIVE, unrefTodos.filter(todo => !todo.checked)],
+      [TodoType.COMPLETED, unrefTodos.filter(todo => todo.checked)]
     ])
     return map.get(type)
   })
@@ -58,11 +63,7 @@ export function useTodoProvide() {
   }
 
   const addTodoItem = (value: string) => {
-    todos.value.unshift({
-      id: nanoid(),
-      value,
-      checked: false
-    })
+    todos.value.unshift(createTodoItem(value))
   }
 
   const deleteTodoItem = (index: number) => {
